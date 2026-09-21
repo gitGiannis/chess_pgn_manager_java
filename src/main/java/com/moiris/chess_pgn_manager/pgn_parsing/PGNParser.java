@@ -23,7 +23,6 @@ public class PGNParser {
     }
 
     public void testClass(String filePath){
-        List<String> l = spiltGamesFromPgnFile(filePath);
         for (String game : spiltGamesFromPgnFile(filePath)){
             gameDataList.add(createGameDataObject(game));
         }
