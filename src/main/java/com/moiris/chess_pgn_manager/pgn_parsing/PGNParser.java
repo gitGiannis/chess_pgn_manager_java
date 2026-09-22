@@ -8,26 +8,48 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * @file PGNParser.java
+ * Parses PGN files into {@link GameData} objects for downstream chess analysis.
+ */
 public class PGNParser {
 
-    // data class for storing data
+    /** Stores the parsed games created by this parser instance. */
     private final List<GameData> gameDataList;
 
     public PGNParser() {
         this.gameDataList = new ArrayList<>();
     }
 
+    /**
+     * Parses a PGN file and prints every parsed game for quick debugging.
+     *
+     * @param filePath the PGN file path to parse
+     */
     public void testClass(String filePath){
-        for (String game : spiltGamesFromPgnFile(filePath)){
-            gameDataList.add(createGameDataObject(game));
-        }
+        this.getGamesAsListOfDataGameObjects(filePath);
 
-        for (GameData gd : gameDataList){System.out.println(gd);}
-
+        for (GameData gd : gameDataList) System.out.println(gd);
     }
 
-    public GameData createGameDataObject(String game) {
+    /**
+     * Parses the given PGN file and fills the {@link gameDataList} list with {@link GameData} entries.
+     * Any existing cached games are cleared before loading fresh data.
+     *
+     * @param filePath the path to the PGN file
+     */
+    public void getGamesAsListOfDataGameObjects(String filePath){
+        for (String game : getGamesAsListOfStrings(filePath))
+            gameDataList.add(createGameDataObject(game));
+    }
+
+    /**
+     * Translates a raw PGN game block into a {@link GameData} instance.
+     *
+     * @param game the complete PGN text for one game
+     * @return the populated game data, or {@code null} when the block is empty
+     */
+    private GameData createGameDataObject(String game) {
         String[] keys = {"Event ", "Site ", "Date ", "Round ", "White ", "Black ", "Result "};
         StringBuilder sb = new StringBuilder(game);
         StringBuilder temp = new StringBuilder();
@@ -62,51 +84,56 @@ public class PGNParser {
             temp.setLength(0);
         }
 
-        //System.out.println(sb.toString());
-
-        //removal of comments
-        while (sb.indexOf("{") != -1){
+        // removal of comments
+        while (sb.indexOf("{") != -1)
             sb.delete(sb.indexOf("{"), sb.indexOf("}")+1);
-        }
-
-        //System.out.println(sb.toString());
 
         String[] moves = sb.toString().split(" +|\\.");
 
-        //for (String m : moves) System.out.println(m);
-
         gd.setResult(moves[moves.length-1]);
-        //System.out.println(gd.getResult());
 
         boolean white = true;
 
         for (int i=0; i<moves.length-1; i++){
-            if (moves[i].matches("\\d+")) continue;
+            if (moves[i].matches("\\d+"))
+                continue;
+
             if (white){
                 white = false;
                 gd.appendWhiteHalfMove(moves[i]);
                 continue;
             }
+
             white = true;
             gd.appendBlackHalfMove(moves[i]);
 
-
         }
-        //System.out.println(gd.toString());
         return gd;
     }
 
-    private List<String> spiltGamesFromPgnFile(String PgnFilePath){
+    /**
+     * Reads the PGN text and splits it into individual game blocks.
+     *
+     * @param filePath the path to the PGN file
+     * @return a list containing one game block per entry, or an empty list on I/O failure
+     */
+    private List<String> getGamesAsListOfStrings(String filePath){
         try{
-            String pgnText = Files.readString(Path.of(PgnFilePath));
-            return getGamesAsList(pgnText);
+            String pgnText = Files.readString(Path.of(filePath));
+            return spiltGamesFromPgnFileAsListOfStrings(pgnText);
 
         } catch (IOException e) {
             return List.of();
         }
     }
 
-    private List<String> getGamesAsList(String pgnAsText){
+    /**
+     * Splits the raw PGN text into separate games.
+     *
+     * @param pgnAsText the full PGN text content
+     * @return one PGN game per list element
+     */
+    private static List<String> spiltGamesFromPgnFileAsListOfStrings(String pgnAsText){
 
         List<String> gamesList = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
@@ -142,7 +169,7 @@ public class PGNParser {
                 sb.setLength(0);
             }
         }
-        //adding last game if file does not end with empty line
+        // adding last game if file does not end with an empty line
         if (!sb.isEmpty()) gamesList.add(sb.toString());
 
         return gamesList;
