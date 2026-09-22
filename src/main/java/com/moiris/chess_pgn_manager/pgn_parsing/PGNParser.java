@@ -1,6 +1,7 @@
 package com.moiris.chess_pgn_manager.pgn_parsing;
 
 import com.moiris.chess_pgn_manager.pojos.GameData;
+import lombok.Getter;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -12,6 +13,7 @@ import java.util.List;
  * @file PGNParser.java
  * Parses PGN files into {@link GameData} objects for downstream chess analysis.
  */
+@Getter
 public class PGNParser {
 
     /** Stores the parsed games created by this parser instance. */
@@ -22,24 +24,13 @@ public class PGNParser {
     }
 
     /**
-     * Parses a PGN file and prints every parsed game for quick debugging.
-     *
-     * @param filePath the PGN file path to parse
-     */
-    public void testClass(String filePath){
-        this.getGamesAsListOfDataGameObjects(filePath);
-
-        for (GameData gd : gameDataList) System.out.println(gd);
-    }
-
-    /**
      * Parses the given PGN file and fills the {@link gameDataList} list with {@link GameData} entries.
      * Any existing cached games are cleared before loading fresh data.
      *
-     * @param filePath the path to the PGN file
+     * @param filePathOfPgnFile the path to the PGN file
      */
-    public void getGamesAsListOfDataGameObjects(String filePath){
-        for (String game : getGamesAsListOfStrings(filePath))
+    public void parse(String filePathOfPgnFile){
+        for (String game : getGamesAsListOfStrings(filePathOfPgnFile))
             gameDataList.add(createGameDataObject(game));
     }
 
