@@ -27,4 +27,8 @@ public class GameData {
     public void appendBlackHalfMove(String halfMove){
         blackHalfMoves.add(halfMove);
     }
+
+    public String getWhiteHalfMoveAt(int index){ return whiteHalfMoves.get(index); }
+
+    public String getBlackHalfMoveAt(int index){ return blackHalfMoves.get(index); }
 }
