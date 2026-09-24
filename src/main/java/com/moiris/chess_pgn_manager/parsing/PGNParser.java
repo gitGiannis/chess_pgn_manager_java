@@ -1,4 +1,4 @@
-package com.moiris.chess_pgn_manager.pgn_parsing;
+package com.moiris.chess_pgn_manager.parsing;
 
 import com.moiris.chess_pgn_manager.pojos.GameData;
 import lombok.Getter;
