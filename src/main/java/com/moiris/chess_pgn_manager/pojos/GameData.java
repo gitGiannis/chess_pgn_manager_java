@@ -20,6 +20,10 @@ public class GameData {
     private List<String> whiteHalfMoves = new ArrayList<>();
     private List<String> blackHalfMoves = new ArrayList<>();
 
+    private int whiteIndex = -1;
+    private int blackIndex = -1;
+    private int totalHalfMoves;
+
     public void appendWhiteHalfMove(String halfMove){
         whiteHalfMoves.add(halfMove);
     }
@@ -28,7 +32,23 @@ public class GameData {
         blackHalfMoves.add(halfMove);
     }
 
-    public String getWhiteHalfMoveAt(int index){ return whiteHalfMoves.get(index); }
+    public String getNextWhiteHalfMove(){
+        whiteIndex++;
+        if (whiteIndex < whiteHalfMoves.size()) {
+            return whiteHalfMoves.get(whiteIndex);
+        }
+        return null;
+    }
 
-    public String getBlackHalfMoveAt(int index){ return blackHalfMoves.get(index); }
+    public String getNextBlackHalfMove(){
+        blackIndex++;
+        if (blackIndex < blackHalfMoves.size()) {
+            return blackHalfMoves.get(blackIndex);
+        }
+        return null;
+    }
+
+    public int totalHalfMoves(){
+        return whiteHalfMoves.size() +  blackHalfMoves.size();
+    }
 }
