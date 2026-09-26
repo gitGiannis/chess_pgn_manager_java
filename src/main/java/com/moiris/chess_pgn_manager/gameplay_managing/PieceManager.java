@@ -5,6 +5,13 @@ import com.moiris.chess_pgn_manager.pojos.Piece;
 
 import java.util.ArrayList;
 
+/**
+ * Manages all pieces currently involved in a chess game.
+ * <p>
+ * The PieceManager stores the kings separately and maintains lists for
+ * queens, bishops, knights, rooks, and pawns for both players. It also
+ * keeps track of captured pieces.
+ */
 public class PieceManager {
     public King wKing;
     public King bKing;
@@ -26,6 +33,10 @@ public class PieceManager {
 
     public ArrayList<Piece> capturedPieces;
 
+    /**
+     * Creates a new PieceManager and initializes all pieces to their
+     * standard starting positions in a chess game.
+     */
     public PieceManager(){
         wKing = new King("e1", "K");
         bKing = new King("e8", "k");
@@ -82,6 +93,14 @@ public class PieceManager {
         capturedPieces = new ArrayList<>();
     }
 
+    /**
+     * Returns a list containing all pieces currently active on the board.
+     * <p>
+     * The returned list includes both kings and all queens, bishops,
+     * knights, rooks, and pawns belonging to both players.
+     *
+     * @return a list containing all active pieces
+     */
     public ArrayList<Piece> getAllPieces(){
         ArrayList<Piece> pieces = new ArrayList<>();
         pieces.add(wKing);
@@ -100,6 +119,14 @@ public class PieceManager {
         return pieces;
     }
 
+    /**
+     * Captures the piece occupying the specified board position.
+     * <p>
+     * The captured piece is added to the list of captured pieces and
+     * removed from the list corresponding to its type and color.
+     *
+     * @param position the board position of the piece to capture
+     */
     public void capturePieceByPosition(String position){
         for (Piece p : getAllPieces()){
             if (p.getPosition().equals(position)){
@@ -118,7 +145,13 @@ public class PieceManager {
         }
     }
 
+    /**
+     * Returns a string representation of all currently active pieces.
+     *
+     * @return a string containing all active pieces
+     */
     public String toString(){
         return getAllPieces().toString();
     }
 }
+
