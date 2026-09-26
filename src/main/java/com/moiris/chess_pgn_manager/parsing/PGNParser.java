@@ -7,6 +7,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -83,15 +84,14 @@ public class PGNParser {
         while (sb.indexOf("{") != -1)
             sb.delete(sb.indexOf("{"), sb.indexOf("}")+1);
 
-        String[] moves = sb.toString().split(" +|\\.");
+        // removal of round numbering and splitting based on whitespaces between half moves
+        String[] moves = sb.toString().replaceAll("\\d+\\.\\s*", "").trim().split("\\s+");
 
         gd.setResult(moves[moves.length-1]);
 
         boolean white = true;
 
         for (int i=0; i<moves.length-1; i++){
-            if (moves[i].matches("\\d+"))
-                continue;
 
             if (white){
                 white = false;
