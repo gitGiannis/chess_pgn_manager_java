@@ -34,6 +34,10 @@ public class PGNParser {
             gameDataList.add(createGameDataObject(game));
     }
 
+    public GameData getGameDataByIndex(int index){
+        return gameDataList.get(index);
+    }
+
     /**
      * Translates a raw PGN game block into a {@link GameData} instance.
      *
