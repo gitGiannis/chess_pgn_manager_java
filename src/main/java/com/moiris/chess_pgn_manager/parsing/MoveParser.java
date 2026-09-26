@@ -2,7 +2,7 @@ package com.moiris.chess_pgn_manager.parsing;
 
 import com.moiris.chess_pgn_manager.gameplay_managing.Board;
 import com.moiris.chess_pgn_manager.gameplay_managing.ValidMoveChecker;
-import com.moiris.chess_pgn_manager.pieces.Pawn;
+import com.moiris.chess_pgn_manager.pieces.*;
 import com.moiris.chess_pgn_manager.pojos.Files;
 import com.moiris.chess_pgn_manager.pojos.GameData;
 import com.moiris.chess_pgn_manager.gameplay_managing.PieceManager;
@@ -14,11 +14,11 @@ import java.util.ArrayList;
 public class MoveParser {
     private final GameData gd;
     private final PieceManager pm;
-    private ValidMoveChecker vmc;
+    private final ValidMoveChecker vmc;
     private Board board;
 
     private boolean capture = false;
-    private boolean pawnPromotion = false;
+    private String pawnPromotion = "";
     private boolean check = false;
     private boolean brilliant = false;
     private boolean blunder = false;
@@ -32,8 +32,6 @@ public class MoveParser {
         this.vmc = validMoveChecker;
     }
 
-    //public void attachBoard(Board board){this.board = board;}
-
     public void parseNextMove(){
         whiteToPlay = !whiteToPlay;
 
@@ -41,8 +39,8 @@ public class MoveParser {
         else{ move = gd.getNextBlackHalfMove(); }
 
 
-
-        System.out.println("white="+whiteToPlay+ " move=" + move);
+        if (whiteToPlay) System.out.println("White -> move=" + move);
+        else System.out.println("Black -> move=" + move);
 
 
         if (move==null){
@@ -105,23 +103,18 @@ public class MoveParser {
 
     private void handlePawn(){
 
-        String pawnProm;
-
         if (move.contains("=")){
             move = move.replace("=", "");
-            pawnProm = move.substring(move.length() - 1);
-            move = move.replace(pawnProm, "");
+            pawnPromotion = move.substring(move.length() - 1);
+            move = move.replace(pawnPromotion, "");
         }
 
         if (move.matches("[a-h]\\d")){
             movePawn("", move);
-
         }
         else {
             movePawn(move.substring(0,1), move.substring(1));
         }
-
-        //pawnPromotion(pawnProm);
     }
 
     private void movePawn(String srcFile, String dest){
@@ -138,12 +131,14 @@ public class MoveParser {
                 for (Piece p : list) {
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == 1){
                         p.move(dest);
+                        promotePawn(p);
                         return;
                     }
                 }
                 for (Piece p : list) {
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == 2){
                         p.move(dest);
+                        promotePawn(p);
                         return;
                     }
                 }
@@ -152,12 +147,14 @@ public class MoveParser {
                 for (Piece p : list) {
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == -1){
                         p.move(dest);
+                        promotePawn(p);
                         return;
                     }
                 }
                 for (Piece p : list) {
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == -2){
                         p.move(dest);
+                        promotePawn(p);
                         return;
                     }
                 }
@@ -176,6 +173,7 @@ public class MoveParser {
                             || Files.getIndex(destFile) - Files.getIndex(p.getFile()) == -1)
                             && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == 1){
                         p.move(dest);
+                        promotePawn(p);
                         return;
                     }
                 }
@@ -186,6 +184,7 @@ public class MoveParser {
                             || Files.getIndex(destFile) - Files.getIndex(p.getFile()) == -1)
                             && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == -1){
                         p.move(dest);
+                        promotePawn(p);
                         return;
                     }
                 }
@@ -195,24 +194,71 @@ public class MoveParser {
     }
 
     // TO COMPLETE
-    private void pawnPromotion(Pawn p, String promotion){
-        if (promotion == null){ return;}
+    private void promotePawn(Piece p){
+        if (pawnPromotion.isEmpty()) return;
 
-        switch (promotion){
-            case "Q":
-                break;
+        Piece newPiece;
+        pm.capturePieceByPosition(p.getPosition());
+        
+        if (whiteToPlay){
+            switch (pawnPromotion){
+                case "Q":
+                    newPiece = new Queen(p.getPosition(), "Q");
+                    pm.wQueens.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
 
-            case "R":
-                break;
+                case "R":
+                    newPiece =new Rook(p.getPosition(), "R");
+                    pm.wRooks.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
 
-            case "N":
-                break;
+                case "N":
+                    newPiece = new Knight(p.getPosition(), "N");
+                    pm.wKnights.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
 
-            case "B":
-                break;
+                case "B":
+                    newPiece = new Bishop(p.getPosition(), "B");
+                    pm.wBishops.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+            }
+        }
+        else{
+            switch (pawnPromotion){
+                case "Q":
+                    newPiece = new Queen(p.getPosition(), "q");
+                    pm.bQueens.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
+
+                case "R":
+                    newPiece = new Rook(p.getPosition(), "r");
+                    pm.bRooks.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
+
+                case "N":
+                    newPiece = new Knight(p.getPosition(), "n");
+                    pm.bKnights.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
+
+                case "B":
+                    newPiece = new Bishop(p.getPosition(), "b");
+                    pm.bBishops.add(newPiece);
+                    newPiece.move(p.getPosition());
+                    break;
+
+                default:
+                    break;
+            }
         }
     }
 
