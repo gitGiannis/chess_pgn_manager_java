@@ -7,13 +7,9 @@ import com.moiris.chess_pgn_manager.pojos.Ranks;
 import java.util.ArrayList;
 
 public class ValidMoveChecker {
-    private Board board;
+    private final Board board;
 
     public ValidMoveChecker(Board board) {
-        this.board = board;
-    }
-
-    public void attachBoard(Board board){
         this.board = board;
     }
 
@@ -105,9 +101,7 @@ public class ValidMoveChecker {
         if (fileDistance == -2 && (rankDistance == -1 || rankDistance == 1)){ return true; }
         if (fileDistance == -1 && (rankDistance == -2 || rankDistance == 2)){ return true; }
         if (fileDistance ==  1 && (rankDistance == -2 || rankDistance == 2)){ return true; }
-        if (fileDistance ==  2 && (rankDistance == -1 || rankDistance == 1)){ return true; }
-
-        return false;
+        return fileDistance == 2 && (rankDistance == -1 || rankDistance == 1);
     }
 
     private static void addCellToPath(ArrayList<String> path, String cell){
