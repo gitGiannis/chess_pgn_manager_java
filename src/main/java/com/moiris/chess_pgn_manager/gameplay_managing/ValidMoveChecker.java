@@ -6,7 +6,6 @@ import com.moiris.chess_pgn_manager.pojos.Ranks;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Checks whether different types of chess piece movements are valid based
