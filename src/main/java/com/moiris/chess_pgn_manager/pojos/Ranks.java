@@ -34,8 +34,11 @@ public class Ranks {
         return ranksReversed[i-1];
     }
 
-
     public static int getIndex(String rank) {
         return Arrays.asList(ranks).indexOf(rank);
+    }
+
+    public static int getIndexReversed(String rank) {
+        return Arrays.asList(ranksReversed).indexOf(rank);
     }
 }

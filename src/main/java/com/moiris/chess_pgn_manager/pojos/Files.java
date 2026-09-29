@@ -40,4 +40,8 @@ public class Files {
         return Arrays.asList(files).indexOf(file);
     }
 
+    public static int getIndexReversed(String file) {
+        return Arrays.asList(filesReversed).indexOf(file);
+    }
+
 }
