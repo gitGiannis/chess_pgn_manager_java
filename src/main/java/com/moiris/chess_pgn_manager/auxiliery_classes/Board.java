@@ -1,4 +1,4 @@
-package com.moiris.chess_pgn_manager.gameplay_managing;
+package com.moiris.chess_pgn_manager.auxiliery_classes;
 
 import com.moiris.chess_pgn_manager.pojos.Files;
 import com.moiris.chess_pgn_manager.pojos.Piece;
