@@ -23,7 +23,7 @@ public class Piece {
         this.rank = position.substring(1,2);
     }
 
-    public void move(String destination) {
+    public void moveTo(String destination) {
         this.position = destination;
 
         this.file = position.substring(0, 1);
