@@ -13,25 +13,11 @@ public class Ranks {
         return ranks[i+1];
     }
 
-    public static String getNextRankReversed(String rank) {
-        int i = getIndex(rank);
-        if (i == -1) return "";
-        if (i >= 7) return "";
-        return ranksReversed[i+1];
-    }
-
     public static String getPreviousRank(String rank) {
         int i = getIndex(rank);
         if (i == -1) return "";
         if (i <= 0) return "";
         return ranks[i-1];
-    }
-
-    public static String getPreviousRankReversed(String rank) {
-        int i = getIndex(rank);
-        if (i == -1) return "";
-        if (i <= 0) return "";
-        return ranksReversed[i-1];
     }
 
     public static int getIndex(String rank) {

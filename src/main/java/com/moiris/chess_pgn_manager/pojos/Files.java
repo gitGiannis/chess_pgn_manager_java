@@ -14,27 +14,12 @@ public class Files {
         return files[i+1];
     }
 
-    public static String getNextFileReversed(String file) {
-        int i = getIndex(file);
-        if (i == -1) return "";
-        if (i >= 7) return "";
-        return filesReversed[i+1];
-    }
-
     public static String getPreviousFile(String file) {
         int i = getIndex(file);
         if (i == -1) return "";
         if (i <= 0) return "";
         return files[i-1];
     }
-
-    public static String getPreviousFileReversed(String file) {
-        int i = getIndex(file);
-        if (i == -1) return "";
-        if (i <= 0) return "";
-        return filesReversed[i-1];
-    }
-
 
     public static int getIndex(String file) {
         return Arrays.asList(files).indexOf(file);
