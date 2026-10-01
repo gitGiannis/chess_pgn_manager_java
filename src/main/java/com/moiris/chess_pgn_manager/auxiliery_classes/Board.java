@@ -18,14 +18,14 @@ public class Board extends HashMap<String, Piece> {
      *  @param pm the PieceManager used to retrieve and manage the pieces on the board */
     public Board(PieceManager pm){
         this.pm = pm;
-        updateBoard();
+        updateSelf();
     }
 
     /** Updates the board so that it reflects the current positions of all
      * pieces managed by the PieceManager.
      * Any existing board contents are cleared before the pieces are added
      * using their current positions as keys. */
-    public void updateBoard(){
+    public void updateSelf(){
         this.clear();
         for (Piece p : pm.getAllPieces()){
             this.put(p.getPosition(), p);
@@ -53,7 +53,7 @@ public class Board extends HashMap<String, Piece> {
     }
     /** Updates the board and then prints its current state to the standard output. */
     public void updateAndPrintSelf() {
-        this.updateBoard();
+        this.updateSelf();
         this.printSelf();
     }
 }
