@@ -49,7 +49,7 @@ public class Board extends HashMap<String, Piece> {
         for (String f : Files.files){
             System.out.print("[" + f + "] ");
         }
-        System.out.println("\n-----------------");
+        System.out.println("\n\n");
     }
     /** Updates the board and then prints its current state to the standard output. */
     public void updateAndPrintSelf() {
