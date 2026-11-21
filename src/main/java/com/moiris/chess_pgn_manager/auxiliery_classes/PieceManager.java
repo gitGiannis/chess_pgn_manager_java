@@ -1,5 +1,6 @@
 package com.moiris.chess_pgn_manager.auxiliery_classes;
 
+import com.moiris.chess_pgn_manager.exceptions.IllegalCaptureException;
 import com.moiris.chess_pgn_manager.pieces.*;
 import com.moiris.chess_pgn_manager.pojos.Piece;
 
@@ -174,7 +175,7 @@ public class PieceManager {
         return getAllPieces().toString();
     }
 
-    public void captureWhitePieceByPosition(String position) {
+    public void captureWhitePieceByPosition(String position) throws IllegalCaptureException {
         for (Piece p : getWhitePieces()){
             if (p.getPosition().equals(position)){
                 capturedPieces.add(p);
@@ -196,13 +197,13 @@ public class PieceManager {
                 else{
                     //ERROR HANDLING
                     System.out.println("ERROR REMOVING WHITE PIECE");
-                    exit(0);
+                    throw new IllegalCaptureException("black");
                 }
             }
         }
     }
 
-    public void captureBlackPieceByPosition(String position) {
+    public void captureBlackPieceByPosition(String position) throws IllegalCaptureException {
         for (Piece p : getBlackPieces()){
             if (p.getPosition().equals(position)){
                 capturedPieces.add(p);
@@ -224,7 +225,7 @@ public class PieceManager {
                 else{
                     //ERROR HANDLING
                     System.out.println("ERROR REMOVING BLACK PIECE");
-                    exit(0);
+                    throw new IllegalCaptureException("white");
                 }
             }
         }
