@@ -8,27 +8,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class PgnService {
 
-    // εξάρτηση από το JsonExportService (παράγει το DTO που θα γίνει json)
+    // dependency from JsonExportService (creates the DTO that will be turned into json)
     private final JsonExportService jsonExportService;
 
     // Constructor Injection:
-    // αυτόματο injection του JsonExportService Bean στον constructor.
+    // auto-injection of JsonExportService Bean in the constructor
     public PgnService(JsonExportService exportService) {
         this.jsonExportService = exportService;
     }
 
-    /** Μέθοδος που δέχεται το pgn σαν text (String) και επιστρέφει τα δεδομένα της παρτίδας ως GameDTO */
+    /** Method that uses the pgn as text (String) and returns the gameplay data as GameDTO */
     public GameDTO parsePgn(String pgn) {
 
-        // PGNParser για την επεξεργασία του PGN που στέλνει ο user
+        // PGNParser for parsing user PGN
         PGNParser parser = new PGNParser();
-        // ανάλυση του pgn και αποθήκευση εσωτερικά στον parser
-        parser.parseText(pgn);
 
-        // ανάκτηση του GameData που δημιουργήθηκε
+        // pgn is parsed and stored in the parser as GameData
+        parser.parseText(pgn);
         GameData gd = parser.getGameData();
 
-        // μετατροπή του GameData σε GameDTO μέσω του JsonExportService.
+        // GameData turns to GameDTO through the JsonExportService.
         GameDTO export = jsonExportService.exportToDTO(gd);
 
         return export;
