@@ -48,7 +48,6 @@ public class MoveDecoder {
 
         if (ply == null){
             // END OF GAME
-            System.out.println("here");
             return;
         }
 
