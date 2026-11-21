@@ -1,6 +1,8 @@
 package com.moiris.chess_pgn_manager.parsing;
 
 import com.moiris.chess_pgn_manager.auxiliery_classes.Board;
+import com.moiris.chess_pgn_manager.exceptions.IllegalCaptureException;
+import com.moiris.chess_pgn_manager.exceptions.IllegalPlyException;
 import com.moiris.chess_pgn_manager.pieces.*;
 import com.moiris.chess_pgn_manager.pojos.Files;
 import com.moiris.chess_pgn_manager.pojos.GameData;
@@ -10,21 +12,19 @@ import com.moiris.chess_pgn_manager.pojos.Ranks;
 
 import java.util.ArrayList;
 
-import static java.lang.System.exit;
-
 public class MoveParser {
     private final GameData gd;
     private final PieceManager pm;
     private final Board b;
 
-    private boolean capture = false;
+    public boolean capture = false;
     private String pawnPromotion = "";
-    private boolean check = false;
-    private boolean brilliant = false;
-    private boolean blunder = false;
+    public boolean check = false;
+    public boolean brilliant = false;
+    public boolean blunder = false;
 
     private boolean whiteToPlay = false;
-    private String move;
+    private String ply;
 
     private ArrayList<Piece> attacker;
 
@@ -34,65 +34,85 @@ public class MoveParser {
         this.b = board;
     }
 
-    public void parseNextMove(){
+    public void parseNextPly() throws IllegalPlyException {
         whiteToPlay = !whiteToPlay;
-        b.updateSelf();
 
         if (whiteToPlay) {
-            move = gd.getNextWhiteHalfMove();
-            System.out.println("White -> " + move);
+            ply = gd.getNextWhitePly();
+            //System.out.println("White -> " + move);
         }
         else{
-            move = gd.getNextBlackHalfMove();
-            System.out.println("Black -> " + move);
+            ply = gd.getNextBlackPly();
+            //System.out.println("Black -> " + move);
         }
 
-        if (move==null){
+        if (ply == null){
             // END OF GAME
+            System.out.println("here");
             return;
         }
 
-        capture = move.contains("x");
-        move = move.replace("x", "");
+        capture = ply.contains("x");
+        ply = ply.replace("x", "");
 
-        check = move.contains("+") || move.contains("#");
-        move = move.replace("+", "");
-        move = move.replace("#", "");
+        check = ply.contains("+") || ply.contains("#");
+        ply = ply.replace("+", "");
+        ply = ply.replace("#", "");
 
-        brilliant = move.contains("!");
-        move = move.replace("!", "");
-        blunder = move.contains("?");
-        move = move.replace("?", "");
-
-
-        if (move.matches("O-O|0-0")){ smallCastle(); return; }
-        if (move.matches("O-O-O|0-0-0")){ bigCastle(); return; }
-
-        if (move.matches("K.+")){ handleKing(); return; }
-        if (move.matches("Q.+")){ handleQueen(); return; }
-        if (move.matches("B.+")){ handleBishop(); return; }
-        if (move.matches("N.+")){ handleKnight(); return; }
-        if (move.matches("R.+")){ handleRook(); return; }
-        if (move.matches("[a-h].+")) {handlePawn(); return;}
+        brilliant = ply.contains("!");
+        ply = ply.replace("!", "");
+        blunder = ply.contains("?");
+        ply = ply.replace("?", "");
 
 
-        System.out.println("ERROR HANDLING MOVE at ["+ gd.getWhiteIndex() + "]");
-        exit(0);
+        if (ply.matches("O-O|0-0"))
+            smallCastle();
+        else if (ply.matches("O-O-O|0-0-0"))
+            bigCastle();
+        else if (ply.matches("K.+"))
+            handleKing();
+        else if (ply.matches("Q.+"))
+            handleQueen();
+        else if (ply.matches("B.+"))
+            handleBishop();
+        else if (ply.matches("N.+"))
+            handleKnight();
+        else if (ply.matches("R.+"))
+            handleRook();
+        else if (ply.matches("[a-h].+"))
+            handlePawn();
+        else{
+            System.out.println("ERROR HANDLING MOVE at ["+ gd.getRoundIndex() + "]");
+            throw new IllegalPlyException(gd.getRoundIndex()+1);
+        }
+
+        b.updateSelf();
     }
 
-    private void capturePieceIf(){
+    private void capturePieceIf() throws IllegalPlyException {
         if (capture) {
             if (whiteToPlay){
-                pm.captureBlackPieceByPosition(move.substring(move.length()-2));
+                try{
+                    pm.captureBlackPieceByPosition(ply.substring(ply.length()-2));
+                }
+                catch (IllegalCaptureException e){
+                    throw new IllegalPlyException(gd.getRoundIndex()+1, e.getMessage());
+                }
+
             }
             else{
-                pm.captureWhitePieceByPosition(move.substring(move.length()-2));
+                try{
+                    pm.captureWhitePieceByPosition(ply.substring(ply.length()-2));
+                }
+                catch (IllegalCaptureException e){
+                    throw new IllegalPlyException(gd.getRoundIndex()+1, e.getMessage());
+                }
             }
         }
         b.updateSelf();
     }
 
-    private void smallCastle(){
+    private void smallCastle() {
         if (whiteToPlay) {
             if (b.get("f1") == null &&  b.get("g1") == null) {
                 if (pm.wKing.getPosition().equals("e1"))
@@ -120,10 +140,9 @@ public class MoveParser {
 
         // ERROR HANDLING
         System.out.println("ERROR HANDLING 0-0");
-        exit(0);
     }
 
-    private void bigCastle(){
+    private void bigCastle() {
         if (whiteToPlay) {
             if (b.get("b1") == null &&  b.get("c1") == null &&  b.get("d1") == null) {
                 if (pm.wKing.getPosition().equals("e1"))
@@ -151,33 +170,32 @@ public class MoveParser {
 
         // ERROR HANDLING
         System.out.println("ERROR HANDLING 0-0-0");
-        exit(0);
     }
 
-    private void handlePawn(){
+    private void handlePawn() throws IllegalPlyException {
 
-        if (move.contains("=")){
-            move = move.replace("=", "");
-            pawnPromotion = move.substring(move.length() - 1);
-            move = move.replace(pawnPromotion, "");
+        if (ply.contains("=")){
+            ply = ply.replace("=", "");
+            pawnPromotion = ply.substring(ply.length() - 1);
+            ply = ply.replace(pawnPromotion, "");
         }
 
         // pawn moves forwards
-        if (move.matches("[a-h]\\d")){
+        if (ply.matches("[a-h]\\d")){
 
-            if (b.get(move) != null){
-                return;
+            if (b.get(ply) != null){
+                throw new IllegalPlyException(gd.getRoundIndex()+1, "pawn moved to occupied cell");
             }
 
-            String destFile = move.substring(0,1);
-            String destRank = move.substring(1);
+            String destFile = ply.substring(0,1);
+            String destRank = ply.substring(1);
 
             if (whiteToPlay){
                 // pawns being one rank away from the designation cell are checked first
                 // this way, logic to check if a pawns way to the destination cell is blocked, is not needed
                 for (Piece p : pm.wPawns) {
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank()) == 1){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         promotePawnIf(p);
                         return;
                     }
@@ -188,7 +206,7 @@ public class MoveParser {
                     if (b.get(p.getFile() + Ranks.getNextRank(p.getRank())) != null) continue;
 
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank()) == 2){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         promotePawnIf(p);
                         return;
                     }
@@ -200,7 +218,7 @@ public class MoveParser {
                 // this way, logic to check if a pawns way to the destination cell is blocked, is not needed
                 for (Piece p : pm.bPawns) {
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == -1){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         promotePawnIf(p);
                         return;
                     }
@@ -211,7 +229,7 @@ public class MoveParser {
                     if (b.get(p.getFile() + Ranks.getPreviousRank(p.getRank())) != null) continue;
 
                     if (p.getFile().equals(destFile) && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank()) == -2){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         promotePawnIf(p);
                         return;
                     }
@@ -220,16 +238,16 @@ public class MoveParser {
         }
 
         // pawn moves diagonally and captures
-        else if (move.matches("[a-h][a-h]\\d")){
+        else if (ply.matches("[a-h][a-h]\\d")){
 
-            String srcFile = move.substring(0,1);
-            move = move.substring(1);
-            String destFile = move.substring(0,1);
-            String destRank = move.substring(1);
+            String srcFile = ply.substring(0,1);
+            ply = ply.substring(1);
+            String destFile = ply.substring(0,1);
+            String destRank = ply.substring(1);
 
             // en passant must be checked and if performed, the pawn captured does not occupy the destination cell of
             // the pawn performing the capture
-            if (b.get(move) != null){
+            if (b.get(ply) != null){
                 capturePieceIf();
             }
             else { // destination cell is null, so a paw must be captured by en passant
@@ -237,8 +255,8 @@ public class MoveParser {
                     if (!pm.bPawns.removeIf(p ->
                                             p.getPosition().equals(destFile + Ranks.getPreviousRank(destRank)))){
 
-                        System.out.println("ERROR HANDLING White EN PASSANT at ["+ gd.getWhiteIndex() + "]");
-                        exit(0);
+                        System.out.println("ERROR HANDLING White EN PASSANT at ["+ gd.getRoundIndex() + "]");
+                        throw new IllegalPlyException(gd.getRoundIndex()+1);
                     }
 
                 }
@@ -246,8 +264,8 @@ public class MoveParser {
                     if (!pm.wPawns.removeIf(p ->
                                             p.getPosition().equals(destFile + Ranks.getNextRank(destRank)))){
 
-                        System.out.println("ERROR HANDLING Black EN PASSANT at ["+ gd.getWhiteIndex() + "]");
-                        exit(0);
+                        System.out.println("ERROR HANDLING Black EN PASSANT at ["+ gd.getRoundIndex() + "]");
+                        throw new IllegalPlyException(gd.getRoundIndex()+1);
                     }
 
                 }
@@ -258,7 +276,7 @@ public class MoveParser {
                     if (p.getFile().equals(srcFile)
                             && Math.abs(Files.getIndex(destFile) - Files.getIndex(p.getFile())) == 1
                             && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank()) == 1) {
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         promotePawnIf(p);
                         return;
                     }
@@ -271,7 +289,7 @@ public class MoveParser {
                     if (p.getFile().equals(srcFile)
                             && Math.abs(Files.getIndex(destFile) - Files.getIndex(p.getFile())) == 1
                             && Ranks.getIndex(destRank) - Ranks.getIndex(p.getRank())  == -1){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         promotePawnIf(p);
                         return;
                     }
@@ -279,11 +297,11 @@ public class MoveParser {
             }
         }
 
-        System.out.println("ERROR HANDLING PAWN at ["+ gd.getWhiteIndex() + "]");
-        exit(0);
+        System.out.println("ERROR HANDLING PAWN at ["+ gd.getRoundIndex() + "]");
+        throw new IllegalPlyException(gd.getRoundIndex()+1);
     }
 
-    private void promotePawnIf(Piece p){
+    private void promotePawnIf(Piece p) {
         if (pawnPromotion.isEmpty()) return;
 
         Piece newPiece;
@@ -360,11 +378,11 @@ public class MoveParser {
                     break;
             }
         }
-        System.out.println("ERROR HANDLING PAWN PROMOTION at [" + gd.getWhiteIndex() + "]");
+        System.out.println("ERROR HANDLING PAWN PROMOTION at [" + gd.getRoundIndex() + "]");
     }
 
-    private void handleBishop(){
-        move = move.replace("B", "");
+    private void handleBishop() throws IllegalPlyException {
+        ply = ply.replace("B", "");
 
         if (whiteToPlay) {
             attacker = pm.wBishops;
@@ -375,54 +393,54 @@ public class MoveParser {
         capturePieceIf();
 
         // e.g. Ba1
-        if (move.matches("[a-h]\\d")){
+        if (ply.matches("[a-h]\\d")){
             for (Piece p : attacker){
                 if (hasValidBishopMove(p) && isNotPinned(p)){
-                    p.moveTo(move);
+                    p.moveTo(ply);
                     return;
                 }
             }
         }
         // e.g. Bah1
-        else if(move.matches("[a-h][a-h]\\d")){
-            String prefixFile = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("[a-h][a-h]\\d")){
+            String prefixFile = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same file as move prefix
                 if (p.getFile().equals(prefixFile)){
                     if (hasValidBishopMove(p) && isNotPinned(p)){
-                    p.moveTo(move);
+                    p.moveTo(ply);
                     return;
                     }
                 }
             }
         }
         // e.g. B8a1
-        else if(move.matches("\\d[a-h]\\d")){
-            String prefixRank = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("\\d[a-h]\\d")){
+            String prefixRank = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getRank().equals(prefixRank)){
                     if (hasValidBishopMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
             }
         }
         // e.g. Bh8a1
-        else if (move.matches("[a-h]\\d[a-h]\\d")){
-            String prefixPosition = move.substring(0,2);
-            move = move.substring(2);
+        else if (ply.matches("[a-h]\\d[a-h]\\d")){
+            String prefixPosition = ply.substring(0,2);
+            ply = ply.substring(2);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getPosition().equals(prefixPosition)){
                     if (hasValidBishopMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
@@ -430,13 +448,12 @@ public class MoveParser {
         }
 
         // ERROR HANDLING
-        System.out.println("ERROR HANDLING BISHOP at [" + gd.getWhiteIndex() + "]");
-        exit(0);
-
+        System.out.println("ERROR HANDLING BISHOP at [" + gd.getRoundIndex() + "]");
+        throw new IllegalPlyException(gd.getRoundIndex()+1);
     }
 
-    private void handleRook(){
-        move = move.replace("R", "");
+    private void handleRook() throws IllegalPlyException {
+        ply = ply.replace("R", "");
 
         if (whiteToPlay) {
             attacker = pm.wRooks;
@@ -447,54 +464,54 @@ public class MoveParser {
         capturePieceIf();
 
         // e.g. Ra1
-        if (move.matches("[a-h]\\d")){
+        if (ply.matches("[a-h]\\d")){
             for (Piece p : attacker){
                 if (hasValidRookMove(p) && isNotPinned(p)){
-                    p.moveTo(move);
+                    p.moveTo(ply);
                     return;
                 }
             }
         }
         // e.g. Rha1
-        else if(move.matches("[a-h][a-h]\\d")){
-            String prefixFile = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("[a-h][a-h]\\d")){
+            String prefixFile = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same file as move prefix
                 if (p.getFile().equals(prefixFile)){
                     if (hasValidRookMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
             }
         }
         // e.g. R8a1
-        else if(move.matches("\\d[a-h]\\d")){
-            String prefixRank = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("\\d[a-h]\\d")){
+            String prefixRank = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getRank().equals(prefixRank)){
                     if (hasValidRookMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
             }
         }
         // e.g.Ra8a1
-        else if (move.matches("[a-h]\\d[a-h]\\d")){
-            String prefixPosition = move.substring(0,2);
-            move = move.substring(2);
+        else if (ply.matches("[a-h]\\d[a-h]\\d")){
+            String prefixPosition = ply.substring(0,2);
+            ply = ply.substring(2);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getPosition().equals(prefixPosition)){
                     if (hasValidRookMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
@@ -502,12 +519,12 @@ public class MoveParser {
         }
 
         // ERROR HANDLING
-        System.out.println("ERROR HANDLING ROOK at [" + gd.getWhiteIndex() + "]");
-        exit(0);
+        System.out.println("ERROR HANDLING ROOK at [" + gd.getRoundIndex() + "]");
+        throw new IllegalPlyException(gd.getRoundIndex()+1);
     }
 
-    private void handleQueen(){
-        move = move.replace("Q", "");
+    private void handleQueen()  throws IllegalPlyException {
+        ply = ply.replace("Q", "");
 
         if (whiteToPlay) {
             attacker = pm.wQueens;
@@ -518,54 +535,54 @@ public class MoveParser {
         capturePieceIf();
 
         // e.g. Qa1
-        if (move.matches("[a-h]\\d")){
+        if (ply.matches("[a-h]\\d")){
             for (Piece p : attacker){
                 if (hasValidQueenMove(p) && isNotPinned(p)){
-                    p.moveTo(move);
+                    p.moveTo(ply);
                     return;
                 }
             }
         }
         // e.g. Qha1
-        else if(move.matches("[a-h][a-h]\\d")){
-            String prefixFile = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("[a-h][a-h]\\d")){
+            String prefixFile = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same file as move prefix
                 if (p.getFile().equals(prefixFile)){
                     if (hasValidQueenMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
             }
         }
         // e.g. Q8a1
-        else if(move.matches("\\d[a-h]\\d")){
-            String prefixRank = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("\\d[a-h]\\d")){
+            String prefixRank = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getRank().equals(prefixRank)){
                     if (hasValidQueenMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
             }
         }
         // e.g.Qa8a1
-        else if (move.matches("[a-h]\\d[a-h]\\d")){
-            String prefixPosition = move.substring(0,2);
-            move = move.substring(2);
+        else if (ply.matches("[a-h]\\d[a-h]\\d")){
+            String prefixPosition = ply.substring(0,2);
+            ply = ply.substring(2);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getPosition().equals(prefixPosition)){
                     if (hasValidQueenMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
@@ -573,12 +590,12 @@ public class MoveParser {
         }
 
         // ERROR HANDLING
-        System.out.println("ERROR HANDLING QUEEN at [" + gd.getWhiteIndex() + "]");
-        exit(0);
+        System.out.println("ERROR HANDLING QUEEN at [" + gd.getRoundIndex() + "]");
+        throw new IllegalPlyException(gd.getRoundIndex()+1);
     }
 
-    private void handleKnight(){
-        move = move.replace("N", "");
+    private void handleKnight()  throws IllegalPlyException {
+        ply = ply.replace("N", "");
 
         if (whiteToPlay) {
             attacker = pm.wKnights;
@@ -589,54 +606,54 @@ public class MoveParser {
         capturePieceIf();
 
         // e.g. Na1
-        if (move.matches("[a-h]\\d")){
+        if (ply.matches("[a-h]\\d")){
             for (Piece p : attacker){
                 if (hasValidKnightMove(p) && isNotPinned(p)){
-                    p.moveTo(move);
+                    p.moveTo(ply);
                     return;
                 }
             }
         }
         // e.g. Nba1
-        else if(move.matches("[a-h][a-h]\\d")){
-            String prefixFile = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("[a-h][a-h]\\d")){
+            String prefixFile = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same file as move prefix
                 if (p.getFile().equals(prefixFile)){
                     if (hasValidKnightMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
             }
         }
         // e.g. N2a1
-        else if(move.matches("\\d[a-h]\\d")){
-            String prefixRank = move.substring(0,1);
-            move = move.substring(1);
+        else if(ply.matches("\\d[a-h]\\d")){
+            String prefixRank = ply.substring(0,1);
+            ply = ply.substring(1);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getRank().equals(prefixRank)){
                     if (hasValidKnightMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
             }
         }
         // e.g.Nb3a1
-        else if (move.matches("[a-h]\\d[a-h]\\d")){
-            String prefixPosition = move.substring(0,2);
-            move = move.substring(2);
+        else if (ply.matches("[a-h]\\d[a-h]\\d")){
+            String prefixPosition = ply.substring(0,2);
+            ply = ply.substring(2);
 
             for (Piece p : attacker){
                 // found piece on the same rank as move prefix
                 if (p.getPosition().equals(prefixPosition)){
                     if (hasValidKnightMove(p) && isNotPinned(p)){
-                        p.moveTo(move);
+                        p.moveTo(ply);
                         return;
                     }
                 }
@@ -644,39 +661,39 @@ public class MoveParser {
         }
 
         // ERROR HANDLING
-        System.out.println("ERROR HANDLING KNIGHT at [" + gd.getWhiteIndex() + "]");
-        exit(0);
+        System.out.println("ERROR HANDLING KNIGHT at [" + gd.getRoundIndex() + "]");
+        throw new IllegalPlyException(gd.getRoundIndex()+1);
     }
 
-    private void handleKing(){
-        move = move.replace("K", "");
+    private void handleKing()  throws IllegalPlyException {
+        ply = ply.replace("K", "");
 
         capturePieceIf();
 
-        if (move.matches("[a-h]\\d")){
+        if (ply.matches("[a-h]\\d")){
             if (whiteToPlay){
-                if (b.get(move) == null){
+                if (b.get(ply) == null){
                     int absoluteFileDiff =
-                            Math.abs(Files.getIndex(pm.wKing.getFile()) - Files.getIndex(move.substring(0,1)));
+                            Math.abs(Files.getIndex(pm.wKing.getFile()) - Files.getIndex(ply.substring(0,1)));
                     int absoluteRankDiff =
-                            Math.abs(Ranks.getIndex(pm.wKing.getRank()) - Ranks.getIndex(move.substring(1)));
+                            Math.abs(Ranks.getIndex(pm.wKing.getRank()) - Ranks.getIndex(ply.substring(1)));
                     if ((absoluteFileDiff == 1 || absoluteFileDiff == 0) &&
                             (absoluteRankDiff == 1 || absoluteRankDiff == 0)){
-                        pm.wKing.moveTo(move);
+                        pm.wKing.moveTo(ply);
                         return;
                     }
                 }
             }
             else {
-                if (b.get(move) == null){
+                if (b.get(ply) == null){
                     int absoluteFileDiff =
-                            Math.abs(Files.getIndex(pm.bKing.getFile()) - Files.getIndex(move.substring(0,1)));
+                            Math.abs(Files.getIndex(pm.bKing.getFile()) - Files.getIndex(ply.substring(0,1)));
                     int absoluteRankDiff =
-                            Math.abs(Ranks.getIndex(pm.bKing.getRank()) - Ranks.getIndex(move.substring(1)));
+                            Math.abs(Ranks.getIndex(pm.bKing.getRank()) - Ranks.getIndex(ply.substring(1)));
 
                     if ((absoluteFileDiff == 1 || absoluteFileDiff == 0) &&
                             (absoluteRankDiff == 1 || absoluteRankDiff == 0)) {
-                        pm.bKing.moveTo(move);
+                        pm.bKing.moveTo(ply);
                         return;
                     }
                 }
@@ -684,7 +701,7 @@ public class MoveParser {
         }
         //ERROR handling
         System.out.println("ERROR HANDLING KING");
-        exit(0);
+        throw new IllegalPlyException(gd.getRoundIndex()+1);
     }
 
     /**
@@ -698,9 +715,9 @@ public class MoveParser {
      */
     public boolean hasValidBishopMove(Piece bishop){
         String srcFile = bishop.getFile();
-        String destFile = move.substring(0,1);
+        String destFile = ply.substring(0,1);
         String srcRank = bishop.getRank();
-        String destRank = move.substring(1);
+        String destRank = ply.substring(1);
 
         int absoluteFileDiff = Math.abs(Files.getIndex(srcFile) - Files.getIndex(destFile));
         int absoluteRankDiff = Math.abs(Ranks.getIndex(srcRank) - Ranks.getIndex(destRank));
@@ -709,7 +726,7 @@ public class MoveParser {
         if (absoluteFileDiff != absoluteRankDiff) return false;
 
         String srcPos =  bishop.getPosition();
-        String destPos =  move;
+        String destPos = ply;
 
         // right and upwards or downwards movement ---------------------------------------------------------------------
         // bishop moves right and upwards
@@ -773,9 +790,9 @@ public class MoveParser {
      */
     public boolean hasValidRookMove(Piece rook){
         String srcFile = rook.getFile();
-        String destFile = move.substring(0,1);
+        String destFile = ply.substring(0,1);
         String srcRank = rook.getRank();
-        String destRank = move.substring(1);
+        String destRank = ply.substring(1);
 
         int fileDiff = Files.getIndex(srcFile) - Files.getIndex(destFile);
         int rankDiff = Ranks.getIndex(srcRank) - Ranks.getIndex(destRank);
@@ -834,10 +851,10 @@ public class MoveParser {
      *         matches a valid knight move; false otherwise
      */
     public boolean hasValidKnightMove(Piece knight){
-        if (b.get(move) != null) return false;
+        if (b.get(ply) != null) return false;
 
-        int fileDistance = Files.getIndex(knight.getFile()) - Files.getIndex(move.substring(0,1));
-        int rankDistance = Ranks.getIndex(knight.getRank()) - Ranks.getIndex(move.substring(1));
+        int fileDistance = Files.getIndex(knight.getFile()) - Files.getIndex(ply.substring(0,1));
+        int rankDistance = Ranks.getIndex(knight.getRank()) - Ranks.getIndex(ply.substring(1));
 
         if (fileDistance == -2 && (rankDistance == -1 || rankDistance == 1)){ return true; }
         if (fileDistance == -1 && (rankDistance == -2 || rankDistance == 2)){ return true; }
@@ -884,7 +901,7 @@ public class MoveParser {
 
             // the current file
             String curFile = piece.getFile();
-            if (curFile.equals(move.substring(0,1))){
+            if (curFile.equals(ply.substring(0,1))){
                 // same file movement, so even if pinned, the piece still blocks the path to the king
                 return true;
             }
@@ -972,7 +989,7 @@ public class MoveParser {
 
             // the current rank
             String curRank = piece.getRank();
-            if (curRank.equals(move.substring(1))){
+            if (curRank.equals(ply.substring(1))){
                 // same rank movement, so even if pinned, the piece still blocks the path to the king
                 return true;
             }
@@ -1068,7 +1085,7 @@ public class MoveParser {
                     if (!cell.matches("[a-h]\\d")) return true;
 
                     //same diagonal movement, so the pin can move whether it is pinned or not
-                    if (cell.equals(move)) return true;
+                    if (cell.equals(ply)) return true;
 
                     // now examining the cells after the king
                     // skipping the cells that contain no piece (friendly or opp)
@@ -1105,7 +1122,7 @@ public class MoveParser {
                     if (!cell.matches("[a-h]\\d")) return true;
 
                     //same diagonal movement, so the pin can move whether it is pinned or not
-                    if (cell.equals(move)) return true;
+                    if (cell.equals(ply)) return true;
 
                     // now examining the cells after the king
                     // skipping the cells that contain no piece (friendly or opp)
@@ -1142,7 +1159,7 @@ public class MoveParser {
                     if (!cell.matches("[a-h]\\d")) return true;
 
                     //same diagonal movement, so the pin can move whether it is pinned or not
-                    if (cell.equals(move)) return true;
+                    if (cell.equals(ply)) return true;
 
                     // now examining the cells after the king
                     // skipping the cells that contain no piece (friendly or opp)
@@ -1178,7 +1195,7 @@ public class MoveParser {
                     if (!cell.matches("[a-h]\\d")) return true;
 
                     //same diagonal movement, so the pin can move whether it is pinned or not
-                    if (cell.equals(move)) return true;
+                    if (cell.equals(ply)) return true;
 
                     // now examining the cells after the king
                     // skipping the cells that contain no piece (friendly or opp)
