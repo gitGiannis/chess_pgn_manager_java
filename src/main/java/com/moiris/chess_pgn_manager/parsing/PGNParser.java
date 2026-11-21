@@ -29,13 +29,37 @@ public class PGNParser {
      *
      * @param filePathOfPgnFile the path to the PGN file
      */
-    public void parse(String filePathOfPgnFile){
-        for (String game : getGamesAsListOfStrings(filePathOfPgnFile))
+    public void parseFile(String filePathOfPgnFile) throws FileNotFoundException {
+        List<String> games;
+        try{
+            String pgnText = Files.readString(Path.of(filePathOfPgnFile));
+            games =  getListOfGamesAsStrings(pgnText);
+
+        } catch (IOException e) {
+            throw new FileNotFoundException();
+        }
+
+        for (String game : games)
             gameDataList.add(createGameDataObject(game));
     }
 
     public GameData getGameDataByIndex(int index){
         return gameDataList.get(index);
+    }
+
+    /**
+     * Parses the given PGN text and fills the {@link gameDataList} list with {@link GameData} entries.
+     * Any existing cached games are cleared before loading fresh data.
+     *
+     * @param pgnTxt the text of the PGN file
+     */
+    public void parseText(String pgnTxt){
+        String game = getListOfGamesAsStrings(pgnTxt).get(0);
+        gameDataList.add(createGameDataObject(game));
+    }
+
+    public GameData getGameData(){
+        return gameDataList.get(0);
     }
 
     /**
@@ -94,40 +118,24 @@ public class PGNParser {
 
             if (white){
                 white = false;
-                gd.appendWhiteHalfMove(moves[i]);
+                gd.appendWhitePly(moves[i]);
                 continue;
             }
 
             white = true;
-            gd.appendBlackHalfMove(moves[i]);
+            gd.appendBlackPly(moves[i]);
 
         }
         return gd;
     }
 
     /**
-     * Reads the PGN text and splits it into individual game blocks.
-     *
-     * @param filePath the path to the PGN file
-     * @return a list containing one game block per entry, or an empty list on I/O failure
-     */
-    private List<String> getGamesAsListOfStrings(String filePath){
-        try{
-            String pgnText = Files.readString(Path.of(filePath));
-            return spiltGamesFromPgnFileAsListOfStrings(pgnText);
-
-        } catch (IOException e) {
-            return List.of();
-        }
-    }
-
-    /**
-     * Splits the raw PGN text into separate games.
+     * Splits the raw PGN text into separate games and returns each game as element of a List<String>.
      *
      * @param pgnAsText the full PGN text content
      * @return one PGN game per list element
      */
-    private static List<String> spiltGamesFromPgnFileAsListOfStrings(String pgnAsText){
+    private static List<String> getListOfGamesAsStrings(String pgnAsText){
 
         List<String> gamesList = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
