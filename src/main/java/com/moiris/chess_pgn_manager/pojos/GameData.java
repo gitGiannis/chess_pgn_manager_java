@@ -17,38 +17,35 @@ public class GameData {
     private String white;
     private String black;
     private String result;
-    private List<String> whiteHalfMoves = new ArrayList<>();
-    private List<String> blackHalfMoves = new ArrayList<>();
+    private List<String> whitePlies = new ArrayList<>();
+    private List<String> blackPlies = new ArrayList<>();
 
-    private int whiteIndex = -1;
-    private int blackIndex = -1;
-    private int totalHalfMoves;
+    private int roundIndex = -1;
 
-    public void appendWhiteHalfMove(String halfMove){
-        whiteHalfMoves.add(halfMove);
+    public void appendWhitePly(String ply){
+        whitePlies.add(ply);
     }
 
-    public void appendBlackHalfMove(String halfMove){
-        blackHalfMoves.add(halfMove);
+    public void appendBlackPly(String ply){
+        blackPlies.add(ply);
     }
 
-    public String getNextWhiteHalfMove(){
-        whiteIndex++;
-        if (whiteIndex < whiteHalfMoves.size()) {
-            return whiteHalfMoves.get(whiteIndex);
+    public String getNextWhitePly(){
+        roundIndex++;
+        if (roundIndex < whitePlies.size()) {
+            return whitePlies.get(roundIndex);
         }
         return null;
     }
 
-    public String getNextBlackHalfMove(){
-        blackIndex++;
-        if (blackIndex < blackHalfMoves.size()) {
-            return blackHalfMoves.get(blackIndex);
+    public String getNextBlackPly(){
+        if (roundIndex < blackPlies.size()) {
+            return blackPlies.get(roundIndex);
         }
         return null;
     }
 
-    public int totalHalfMoves(){
-        return whiteHalfMoves.size() +  blackHalfMoves.size();
+    public int totalPliesCount(){
+        return whitePlies.size() +  blackPlies.size();
     }
 }
