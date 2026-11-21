@@ -1,13 +1,14 @@
-package com.moiris.chess_pgn_manager.export;
+package com.moiris.chess_pgn_manager.services;
 
-import com.moiris.chess_pgn_manager.auxiliery_classes.Board;
-import com.moiris.chess_pgn_manager.auxiliery_classes.PieceManager;
-import com.moiris.chess_pgn_manager.exceptions.IllegalPlyException;
-import com.moiris.chess_pgn_manager.parsing.MoveParser;
-import com.moiris.chess_pgn_manager.pojos.Files;
-import com.moiris.chess_pgn_manager.pojos.GameData;
-import com.moiris.chess_pgn_manager.pojos.Piece;
-import com.moiris.chess_pgn_manager.pojos.Ranks;
+import com.moiris.chess_pgn_manager.logic.Board;
+import com.moiris.chess_pgn_manager.logic.PieceManager;
+import com.moiris.chess_pgn_manager.logic.exceptions.IllegalPlyException;
+import com.moiris.chess_pgn_manager.logic.MoveDecoder;
+import com.moiris.chess_pgn_manager.logic.pojos.Files;
+import com.moiris.chess_pgn_manager.logic.GameData;
+import com.moiris.chess_pgn_manager.logic.pojos.Piece;
+import com.moiris.chess_pgn_manager.logic.pojos.Ranks;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,8 @@ import java.util.List;
  * Replays a {@link GameData} with the existing MoveParser and converts it into
  * plain DTOs that Jackson can serialize straight to JSON.
  */
-public class jsonExporter {
+@Service
+public class JsonExportService {
 
     /** record that stores the Header info of a game */
     public record Headers(String event,
@@ -57,13 +59,13 @@ public class jsonExporter {
                 gd.getResult());}
 
     /** Static method that creates the DTO for the API */
-    public static GameDTO toDTO(GameData gd) {
+    public GameDTO exportToDTO(GameData gd) {
         // MoveParser consumes the game through the *Index fields, so reset them
         // to allow exporting the same GameData more than once.
 
         PieceManager pm = new PieceManager();
         Board board = new Board(pm);
-        MoveParser mp = new MoveParser(gd, pm, board);
+        MoveDecoder mp = new MoveDecoder(gd, pm, board);
 
         String initialFen = createFEN(board);
 
