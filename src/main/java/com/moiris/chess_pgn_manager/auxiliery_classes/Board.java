@@ -31,6 +31,7 @@ public class Board extends HashMap<String, Piece> {
             this.put(p.getPosition(), p);
         }
     }
+
     /** Prints the current state of the board to the standard output.
      * Empty squares are represented by ".", while occupied squares are
      * represented by their corresponding Piece. Ranks are printed from
@@ -51,6 +52,7 @@ public class Board extends HashMap<String, Piece> {
         }
         System.out.println("\n\n");
     }
+
     /** Updates the board and then prints its current state to the standard output. */
     public void updateAndPrintSelf() {
         this.updateSelf();
