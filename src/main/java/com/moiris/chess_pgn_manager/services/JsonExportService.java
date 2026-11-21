@@ -67,7 +67,7 @@ public class JsonExportService {
         Board board = new Board(pm);
         MoveDecoder decoder = new MoveDecoder(gd, pm, board);
 
-        String initialFen = createFEN(board);
+        String initialFen = createCustomFEN(board);
 
         List<Ply> plies = new ArrayList<>();
 
@@ -90,7 +90,7 @@ public class JsonExportService {
             plies.add(new Ply(i/2 + 1,
                     white ? "white" : "black",
                     san,
-                    createFEN(board),
+                    createCustomFEN(board),
                     new Footer(
                             decoder.capture,
                             decoder.check,
@@ -106,8 +106,9 @@ public class JsonExportService {
         return new GameDTO(headersOf(gd), initialFen, plies);
     }
 
-    /** screenshot of the chess board for every ply as FEN, e.g. "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR". */
-    static String createFEN(Board board) {
+    /** screenshot of the chess board for every ply as custom FEN
+     * e.g."rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR". */
+    static String createCustomFEN(Board board) {
         StringBuilder sb = new StringBuilder();
         for (String r : Ranks.ranksReversed) {
             int empty = 0;
