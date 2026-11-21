@@ -68,7 +68,7 @@ public class PGNParser {
      * @return the populated game data, or {@code null} when the block is empty
      */
     private GameData createGameDataObject(String game) {
-        String[] keys = {"Event ", "Site ", "Date ", "Round ", "White ", "Black ", "Result "};
+        //String[] keys = {"Event ", "Site ", "Date ", "Round ", "White ", "Black ", "Result "};
         StringBuilder sb = new StringBuilder(game);
         StringBuilder temp = new StringBuilder();
         GameData gd = new GameData();
@@ -78,25 +78,25 @@ public class PGNParser {
             temp.append(sb, sb.indexOf("[")+1, sb.indexOf("]"));
             sb.delete(sb.indexOf("["), sb.indexOf("]")+1);
 
-            if (temp.indexOf(keys[0]) != -1){
+            if (temp.toString().matches("Event .+")){
                 gd.setEvent(temp.substring(temp.indexOf("\"")+1, temp.lastIndexOf("\"")));
             }
-            if (temp.indexOf(keys[1]) != -1){
+            if (temp.toString().matches("Site .+")){
                 gd.setSite(temp.substring(temp.indexOf("\"")+1, temp.lastIndexOf("\"")));
             }
-            if (temp.indexOf(keys[2]) != -1){
+            if (temp.toString().matches("Date .+")){
                 gd.setDate(temp.substring(temp.indexOf("\"")+1, temp.lastIndexOf("\"")));
             }
-            if (temp.indexOf(keys[3]) != -1){
+            if (temp.toString().matches("Round .+")){
                 gd.setRound(temp.substring(temp.indexOf("\"")+1, temp.lastIndexOf("\"")));
             }
-            if (temp.indexOf(keys[4]) != -1){
+            if (temp.toString().matches("White .+")){
                 gd.setWhite(temp.substring(temp.indexOf("\"")+1, temp.lastIndexOf("\"")));
             }
-            if (temp.indexOf(keys[5]) != -1){
+            if (temp.toString().matches("Black .+")){
                 gd.setBlack(temp.substring(temp.indexOf("\"")+1, temp.lastIndexOf("\"")));
             }
-            if (temp.indexOf(keys[6]) != -1){
+            if (temp.toString().matches("Result .+")){
                 gd.setResult(temp.substring(temp.indexOf("\"")+1, temp.lastIndexOf("\"")));
             }
             temp.setLength(0);
@@ -109,7 +109,7 @@ public class PGNParser {
         // removal of round numbering and splitting based on whitespaces between half moves
         String[] moves = sb.toString().replaceAll("\\d+\\.\\s*", "").trim().split("\\s+");
 
-        gd.setResult(moves[moves.length-1]);
+        if (gd.getResult() == null) gd.setResult(moves[moves.length-1]);
 
         boolean white = true;
 
