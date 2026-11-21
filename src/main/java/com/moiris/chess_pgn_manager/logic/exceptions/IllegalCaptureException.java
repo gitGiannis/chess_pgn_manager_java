@@ -1,4 +1,4 @@
-package com.moiris.chess_pgn_manager.exceptions;
+package com.moiris.chess_pgn_manager.logic.exceptions;
 
 public class IllegalCaptureException extends Exception{
     public IllegalCaptureException(String colour){

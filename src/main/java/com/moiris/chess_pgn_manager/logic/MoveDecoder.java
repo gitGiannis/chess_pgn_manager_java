@@ -1,18 +1,18 @@
-package com.moiris.chess_pgn_manager.parsing;
+package com.moiris.chess_pgn_manager.logic;
 
-import com.moiris.chess_pgn_manager.auxiliery_classes.Board;
-import com.moiris.chess_pgn_manager.exceptions.IllegalCaptureException;
-import com.moiris.chess_pgn_manager.exceptions.IllegalPlyException;
-import com.moiris.chess_pgn_manager.pieces.*;
-import com.moiris.chess_pgn_manager.pojos.Files;
-import com.moiris.chess_pgn_manager.pojos.GameData;
-import com.moiris.chess_pgn_manager.auxiliery_classes.PieceManager;
-import com.moiris.chess_pgn_manager.pojos.Piece;
-import com.moiris.chess_pgn_manager.pojos.Ranks;
+import com.moiris.chess_pgn_manager.logic.exceptions.IllegalCaptureException;
+import com.moiris.chess_pgn_manager.logic.exceptions.IllegalPlyException;
+import com.moiris.chess_pgn_manager.logic.pojos.pieces.Bishop;
+import com.moiris.chess_pgn_manager.logic.pojos.pieces.Knight;
+import com.moiris.chess_pgn_manager.logic.pojos.pieces.Queen;
+import com.moiris.chess_pgn_manager.logic.pojos.pieces.Rook;
+import com.moiris.chess_pgn_manager.logic.pojos.Files;
+import com.moiris.chess_pgn_manager.logic.pojos.Piece;
+import com.moiris.chess_pgn_manager.logic.pojos.Ranks;
 
 import java.util.ArrayList;
 
-public class MoveParser {
+public class MoveDecoder {
     private final GameData gd;
     private final PieceManager pm;
     private final Board b;
@@ -28,7 +28,7 @@ public class MoveParser {
 
     private ArrayList<Piece> attacker;
 
-    public MoveParser(GameData gameData, PieceManager pieceManager, Board board) {
+    public MoveDecoder(GameData gameData, PieceManager pieceManager, Board board) {
         this.gd = gameData;
         this.pm = pieceManager;
         this.b = board;

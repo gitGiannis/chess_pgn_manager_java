@@ -1,11 +1,11 @@
 package com.moiris.chess_pgn_manager.testing;
 
-import com.moiris.chess_pgn_manager.auxiliery_classes.Board;
-import com.moiris.chess_pgn_manager.auxiliery_classes.PieceManager;
-import com.moiris.chess_pgn_manager.exceptions.IllegalPlyException;
-import com.moiris.chess_pgn_manager.parsing.MoveParser;
-import com.moiris.chess_pgn_manager.parsing.PGNParser;
-import com.moiris.chess_pgn_manager.pojos.GameData;
+import com.moiris.chess_pgn_manager.logic.Board;
+import com.moiris.chess_pgn_manager.logic.PieceManager;
+import com.moiris.chess_pgn_manager.logic.exceptions.IllegalPlyException;
+import com.moiris.chess_pgn_manager.logic.MoveDecoder;
+import com.moiris.chess_pgn_manager.logic.PGNParser;
+import com.moiris.chess_pgn_manager.logic.GameData;
 
 import java.io.FileNotFoundException;
 
@@ -31,7 +31,7 @@ public class Testing {
         PieceManager pm = new PieceManager();
         Board b =  new Board(pm);
 
-        MoveParser moveParser = new MoveParser(gamedata, pm, b);
+        MoveDecoder moveDecoder = new MoveDecoder(gamedata, pm, b);
 
         for (int i = 0; i<= gamedata.totalPliesCount(); i++){
             b.updateAndPrintSelf();
@@ -40,7 +40,7 @@ public class Testing {
             System.out.print(white ? "white -> " : "black -> ");
             System.out.println(white ? gamedata.getWhitePlies().get(i / 2) : gamedata.getBlackPlies().get(i / 2));
             try {
-                moveParser.parseNextPly();
+                moveDecoder.parseNextPly();
             } catch (IllegalPlyException e) {
                 e.printStackTrace();
                 exit(0);
@@ -62,7 +62,7 @@ public class Testing {
             Board b =  new Board(pm);
             GameData gamedata = parser.getGameDataByIndex(j);
             System.out.println("\n\n\ngame no ->" + (j+1) + "--------------------------------------------------------");
-            MoveParser moveParser = new MoveParser(gamedata, pm, b);
+            MoveDecoder moveDecoder = new MoveDecoder(gamedata, pm, b);
             for (int i = 0; i<= gamedata.totalPliesCount(); i++){
                 if (verbose) b.updateAndPrintSelf();
 
@@ -72,7 +72,7 @@ public class Testing {
                 System.out.println(white ? gamedata.getWhitePlies().get(i / 2) : gamedata.getBlackPlies().get(i / 2));
 
                 try {
-                    moveParser.parseNextPly();
+                    moveDecoder.parseNextPly();
                 } catch (IllegalPlyException e) {
                     e.printStackTrace();
                     exit(0);

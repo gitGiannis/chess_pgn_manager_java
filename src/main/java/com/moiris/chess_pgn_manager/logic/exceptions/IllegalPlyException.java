@@ -1,4 +1,4 @@
-package com.moiris.chess_pgn_manager.exceptions;
+package com.moiris.chess_pgn_manager.logic.exceptions;
 
 public class IllegalPlyException extends Exception{
     public IllegalPlyException(int index){

@@ -1,4 +1,4 @@
-package com.moiris.chess_pgn_manager.pojos;
+package com.moiris.chess_pgn_manager.logic.pojos;
 
 import lombok.Data;
 

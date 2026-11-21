@@ -1,12 +1,10 @@
-package com.moiris.chess_pgn_manager.auxiliery_classes;
+package com.moiris.chess_pgn_manager.logic;
 
-import com.moiris.chess_pgn_manager.exceptions.IllegalCaptureException;
-import com.moiris.chess_pgn_manager.pieces.*;
-import com.moiris.chess_pgn_manager.pojos.Piece;
+import com.moiris.chess_pgn_manager.logic.exceptions.IllegalCaptureException;
+import com.moiris.chess_pgn_manager.logic.pojos.Piece;
+import com.moiris.chess_pgn_manager.logic.pojos.pieces.*;
 
 import java.util.ArrayList;
-
-import static java.lang.System.exit;
 
 /**
  * Manages all pieces currently involved in a chess game.

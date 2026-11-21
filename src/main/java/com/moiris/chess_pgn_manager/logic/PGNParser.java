@@ -1,6 +1,5 @@
-package com.moiris.chess_pgn_manager.parsing;
+package com.moiris.chess_pgn_manager.logic;
 
-import com.moiris.chess_pgn_manager.pojos.GameData;
 import lombok.Getter;
 
 import java.io.*;
@@ -11,7 +10,7 @@ import java.util.List;
 
 /**
  * @file PGNParser.java
- * Parses PGN files into {@link GameData} objects for downstream chess analysis.
+ * Parses PGN files into {@link GameData} objects for decoding and chess analysis.
  */
 @Getter
 public class PGNParser {

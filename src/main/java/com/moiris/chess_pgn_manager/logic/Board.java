@@ -1,8 +1,8 @@
-package com.moiris.chess_pgn_manager.auxiliery_classes;
+package com.moiris.chess_pgn_manager.logic;
 
-import com.moiris.chess_pgn_manager.pojos.Files;
-import com.moiris.chess_pgn_manager.pojos.Piece;
-import com.moiris.chess_pgn_manager.pojos.Ranks;
+import com.moiris.chess_pgn_manager.logic.pojos.Files;
+import com.moiris.chess_pgn_manager.logic.pojos.Piece;
+import com.moiris.chess_pgn_manager.logic.pojos.Ranks;
 
 import java.util.HashMap;
 
