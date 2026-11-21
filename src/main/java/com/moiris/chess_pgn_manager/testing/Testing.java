@@ -40,7 +40,7 @@ public class Testing {
             System.out.print(white ? "white -> " : "black -> ");
             System.out.println(white ? gamedata.getWhitePlies().get(i / 2) : gamedata.getBlackPlies().get(i / 2));
             try {
-                moveDecoder.parseNextPly();
+                moveDecoder.decodeNextPly();
             } catch (IllegalPlyException e) {
                 e.printStackTrace();
                 exit(0);
@@ -72,7 +72,7 @@ public class Testing {
                 System.out.println(white ? gamedata.getWhitePlies().get(i / 2) : gamedata.getBlackPlies().get(i / 2));
 
                 try {
-                    moveDecoder.parseNextPly();
+                    moveDecoder.decodeNextPly();
                 } catch (IllegalPlyException e) {
                     e.printStackTrace();
                     exit(0);

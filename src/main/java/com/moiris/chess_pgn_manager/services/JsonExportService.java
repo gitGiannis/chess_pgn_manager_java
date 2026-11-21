@@ -65,7 +65,7 @@ public class JsonExportService {
 
         PieceManager pm = new PieceManager();
         Board board = new Board(pm);
-        MoveDecoder mp = new MoveDecoder(gd, pm, board);
+        MoveDecoder decoder = new MoveDecoder(gd, pm, board);
 
         String initialFen = createFEN(board);
 
@@ -77,7 +77,7 @@ public class JsonExportService {
             boolean error = false;
 
             try{
-                mp.parseNextPly();
+                decoder.decodeNextPly();
             }
             catch (IllegalPlyException e) {
                 // ply could not be parsed due to faulty mistake and parsing stops
@@ -91,8 +91,15 @@ public class JsonExportService {
                     white ? "white" : "black",
                     san,
                     createFEN(board),
-                    new Footer(mp.capture, mp.check, mp.brilliant, mp.blunder, error, capturedPieces(pm))));
+                    new Footer(
+                            decoder.capture,
+                            decoder.check,
+                            decoder.brilliant,
+                            decoder.blunder,
+                            error,
+                            capturedPieces(pm))));
 
+            // if an error occurs (cannot resolve current move), no further moves are decoded
             if (error) break;
         }
 

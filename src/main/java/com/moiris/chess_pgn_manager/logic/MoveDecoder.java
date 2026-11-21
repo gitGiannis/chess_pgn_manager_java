@@ -34,7 +34,7 @@ public class MoveDecoder {
         this.b = board;
     }
 
-    public void parseNextPly() throws IllegalPlyException {
+    public void decodeNextPly() throws IllegalPlyException {
         whiteToPlay = !whiteToPlay;
 
         if (whiteToPlay) {
